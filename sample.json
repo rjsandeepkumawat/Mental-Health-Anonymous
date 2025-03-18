@@ -1,0 +1,236 @@
+{
+  "bot_name": "Dr. MindBot",
+  "role": "Psychiatrist AI",
+  "conversation_flow": {
+    "start_message": "Hello! How are you feeling today?",
+    "review_message": "Would you like to share feedback about this chat?"
+  },
+  "conversations": [
+    {
+      "trigger_keywords": ["anxious", "anxiety", "nervous", "worried"],
+      "emotion": "concerned",
+      "response": "I'm hearing that you're feeling anxious. Can you tell me more about what’s making you feel this way?",
+      "follow_up_questions": [
+        "When did you first start noticing these feelings?",
+        "How do these anxious feelings affect your daily routine?",
+        "Have you experienced similar feelings in the past?"
+      ],
+      "treatment": "Consider cognitive-behavioral therapy (CBT), mindfulness, and medication if necessary."
+    },
+    {
+      "trigger_keywords": ["sad", "depressed", "down", "hopeless"],
+      "emotion": "empathetic",
+      "response": "I'm sorry to hear that you're feeling down. Would you like to talk about what's been bothering you lately?",
+      "follow_up_questions": [
+        "What situations or thoughts seem to trigger these feelings?",
+        "Have you spoken to anyone else about how you're feeling?",
+        "What do you usually do to cope when you're feeling this way?"
+      ],
+      "treatment": "Therapy, lifestyle changes, and medication can help manage depression."
+    },
+    {
+      "trigger_keywords": ["can't sleep", "insomnia", "trouble sleeping", "sleep"],
+      "emotion": "calm",
+      "response": "Sleep issues can really affect how we feel. Can you share more about your sleep pattern recently?",
+      "follow_up_questions": [
+        "Do you find it hard to fall asleep, stay asleep, or both?",
+        "Have there been any recent changes in your lifestyle or stress levels?",
+        "Do you use your phone or other devices before bedtime?"
+      ]
+    },
+    {
+      "trigger_keywords": ["ADHD", "inattention", "hyperactivity", "impulsivity"],
+      "emotion": "understanding",
+      "response": "It sounds like you're dealing with ADHD symptoms. Let's discuss how this affects your daily life.",
+      "follow_up_questions": [
+        "How often do you experience difficulty focusing?",
+        "Do you find yourself interrupting others or acting impulsively?",
+        "Have you tried any strategies to manage these symptoms?"
+      ],
+      "treatment": "Consider behavioral therapy, medication, and lifestyle changes to manage ADHD symptoms."
+    },
+    {
+      "trigger_keywords": ["autism", "ASD", "communication issues", "social challenges"],
+      "emotion": "supportive",
+      "response": "Autism can present unique challenges. Can you share more about what you're experiencing?",
+      "follow_up_questions": [
+        "What specific situations do you find most challenging?",
+        "Do you have a support system in place?",
+        "Have you explored therapy or educational interventions?"
+      ],
+      "treatment": "Therapies like ABA, speech therapy, and social skills training can be beneficial."
+    },
+    {
+      "trigger_keywords": ["eating disorder", "anorexia", "bulimia", "body image"],
+      "emotion": "compassionate",
+      "response": "Eating disorders can be challenging. Can you share more about your experiences?",
+      "follow_up_questions": [
+        "How do you feel about your body image?",
+        "Do you have any dietary restrictions or habits?",
+        "Have you sought professional help for this?"
+      ],
+      "treatment": "Consider therapy, nutritional counseling, and support groups."
+    },
+    {
+      "trigger_keywords": ["conduct disorder", "behavior issues", "aggression", "rule-breaking"],
+      "emotion": "patient",
+      "response": "Behavioral issues can be tough to manage. Let's discuss what's been happening.",
+      "follow_up_questions": [
+        "What specific behaviors are causing concern?",
+        "How do these behaviors affect your relationships?",
+        "Have you tried any interventions or therapies?"
+      ],
+      "treatment": "Behavioral therapy, family therapy, and educational support can be helpful."
+    },
+    {
+      "trigger_keywords": ["substance use", "addiction", "alcohol", "drugs"],
+      "emotion": "non-judgmental",
+      "response": "Substance use can be a complex issue. Would you like to talk about your experiences?",
+      "follow_up_questions": [
+        "What substances are you using?",
+        "How does substance use affect your daily life?",
+        "Have you considered seeking help for this?"
+      ],
+      "treatment": "Consider rehabilitation programs, therapy, and support groups."
+    },
+    {
+      "trigger_keywords": ["bipolar", "manic", "depressive", "mood swings"],
+      "emotion": "empathetic",
+      "response": "Bipolar disorder can cause significant mood swings. Let's discuss how this affects you.",
+      "follow_up_questions": [
+        "How do you manage your mood swings?",
+        "Do you have a support system in place?",
+        "Have you tried medication or therapy?"
+      ],
+      "treatment": "Medication, therapy, and lifestyle changes can help manage bipolar disorder."
+    },
+    {
+      "trigger_keywords": ["schizophrenia", "hallucinations", "delusions", "paranoia"],
+      "emotion": "supportive",
+      "response": "Schizophrenia can be challenging. Can you share more about your experiences?",
+      "follow_up_questions": [
+        "What symptoms are you experiencing?",
+        "Do you have a support system in place?",
+        "Have you sought professional help?"
+      ],
+      "treatment": "Medication, therapy, and support groups can be beneficial."
+    },
+    {
+      "trigger_keywords": ["burnout", "exhaustion", "work stress", "overwhelmed"],
+      "emotion": "supportive",
+      "response": "Burnout can be overwhelming. Let's discuss how you're feeling.",
+      "follow_up_questions": [
+        "What aspects of your work or life are causing the most stress?",
+        "How do you usually manage stress?",
+        "Have you considered taking a break or seeking support?"
+      ],
+      "treatment": "Consider stress management techniques, therapy, and lifestyle changes."
+    },
+    {
+      "trigger_keywords": ["PTSD", "trauma", "flashbacks", "nightmares"],
+      "emotion": "empathetic",
+      "response": "PTSD can be very challenging. Would you like to talk about your experiences?",
+      "follow_up_questions": [
+        "What traumatic events have you experienced?",
+        "How do these experiences affect your daily life?",
+        "Have you sought professional help?"
+      ],
+      "treatment": "Therapy, such as EMDR or CBT, and support groups can be helpful."
+    },
+    {
+      "trigger_keywords": ["OCD", "obsessive", "compulsive", "intrusive thoughts"],
+      "emotion": "understanding",
+      "response": "OCD can be difficult to manage. Let's discuss your experiences.",
+      "follow_up_questions": [
+        "What specific thoughts or behaviors are causing concern?",
+        "How do these affect your daily life?",
+        "Have you tried any therapies or interventions?"
+      ],
+      "treatment": "Consider CBT, medication, and lifestyle changes."
+    },
+    {
+      "trigger_keywords": ["dementia", "memory loss", "Alzheimer's", "cognitive decline"],
+      "emotion": "compassionate",
+      "response": "Memory issues can be concerning. Can you share more about what you're experiencing?",
+      "follow_up_questions": [
+        "What specific memory issues are you noticing?",
+        "How do these issues affect your daily life?",
+        "Have you sought medical advice?"
+      ],
+      "treatment": "Consider medical evaluation, therapy, and support groups."
+    },
+    {
+      "trigger_keywords": ["psychosis", "delusions", "hallucinations", "paranoia"],
+      "emotion": "supportive",
+      "response": "Psychosis can be frightening. Let's discuss your experiences.",
+      "follow_up_questions": [
+        "What specific symptoms are you experiencing?",
+        "How do these symptoms affect your daily life?",
+        "Have you sought professional help?"
+      ],
+      "treatment": "Medication, therapy, and support groups can be beneficial."
+    }
+  ],
+  "age_specific_conditions": {
+    "Childhood_and_Adolescence": {
+      "ADHD": {
+        "description": "Characterized by inattention, hyperactivity, and impulsivity.",
+        "bot_response": {
+          "understood": "It seems like focus and hyperactivity are a challenge. Some ways to manage ADHD include establishing routines, breaking tasks into smaller steps, and considering mindfulness exercises. Would you like me to suggest specific strategies?",
+          "not_understood": "Could you tell me more about the challenges you're facing with focus and behavior?"
+        }
+      },
+      "ASD": {
+        "description": "Affects communication and behavior, often diagnosed in early childhood.",
+        "bot_response": {
+          "understood": "Social situations may feel challenging. Structured schedules and social skills training can be helpful. Would you like resources or tips on communication strategies?",
+          "not_understood": "Could you describe more about your experiences in social situations?"
+        }
+      },
+      "Anxiety_Disorders": {
+        "description": "Includes separation anxiety, social anxiety, and specific phobias.",
+        "bot_response": {
+          "understood": "It’s natural to feel anxious sometimes. Techniques like breathing exercises, gradual exposure to fears, and talking to trusted people can help. Shall I walk you through a calming exercise?",
+          "not_understood": "Can you tell me in which situations you feel most anxious?"
+        }
+      }
+    },
+    "Young_Adulthood": {
+      "Bipolar_Disorder": {
+        "description": "Mood swings with periods of high and low energy.",
+        "bot_response": {
+          "understood": "Bipolar disorder can be managed with mood tracking, healthy sleep habits, and professional guidance. Would you like me to suggest lifestyle tips?",
+          "not_understood": "Could you share more about the mood patterns you've experienced?"
+        }
+      },
+      "Substance_Use_Disorders": {
+        "description": "Risk increases due to peer pressure and stress.",
+        "bot_response": {
+          "understood": "Substance use can sometimes be a way to cope. Building support systems and seeking professional help can make a big difference. Would you like resources or support group suggestions?",
+          "not_understood": "Would you like to share your habits and how they impact you?"
+        }
+      }
+    },
+    "Older_Adulthood": {
+      "Dementia": {
+        "description": "Includes Alzheimer's, affecting memory and behavior.",
+        "bot_response": {
+          "understood": "Memory issues can be concerning. Establishing routines, mental exercises, and support from family can help. Would you like guidance on memory-support strategies?",
+          "not_understood": "Have you noticed specific instances of forgetfulness or confusion recently?"
+        }
+      },
+      "Depression": {
+        "description": "Often linked to loneliness, loss, or health concerns.",
+        "bot_response": {
+          "understood": "Feelings of sadness can be managed by staying socially connected, engaging in hobbies, and speaking to professionals. Shall I suggest ways to stay engaged?",
+          "not_understood": "Would you like to share more about what's been on your mind lately?"
+        }
+      }
+    }
+  },
+  "closing_statements": [
+    "Thank you for sharing that with me. Your feelings are valid, and I'm here to listen anytime you need.",
+    "It’s great that you’re opening up about this. Let’s keep exploring it together.",
+    "Remember, it’s okay to take things one step at a time. How are you feeling now after our chat?"
+  ]
+}
