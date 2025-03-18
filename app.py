@@ -77,7 +77,7 @@ def generate_response(user_input, chat_history_ids, temperature, max_new_tokens,
 st.sidebar.title("🧠 MindEase Chatbot")
 st.sidebar.markdown("Your Safe Space to Talk & Heal. 💙")
 st.sidebar.subheader("Models and Parameters")
-model_choice = st.sidebar.selectbox("Choose a model", ["DialoGPT-medium"])
+model_choice = st.sidebar.selectbox("Choose a model", ["Model1"])
 temperature = st.sidebar.slider("Temperature", 0.01, 1.00, 0.7)
 max_new_tokens = st.sidebar.slider("Max New Tokens", 50, 500, 150)
 top_p = st.sidebar.slider("Top-p (Nucleus Sampling)", 0.1, 1.0, 0.9)
