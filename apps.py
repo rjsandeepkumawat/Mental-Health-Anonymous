@@ -121,8 +121,26 @@ st.markdown("""
 </script>
 """, unsafe_allow_html=True)
 
+
+'''
+#🛠️ Steps to Run
+Clone the repository.
+Install dependencies using pip install -r requirements.txt.
+Run the Streamlit app: streamlit run app.py.
+Adjust model settings in the sidebar.
+Interact with the chatbot in the web interface.
+🌟 Features
+Empathetic Conversations: Trigger-based responses to mental health keywords.
+Personalized Treatments: Suggests therapies and lifestyle changes.
+Speech Recognition: Converts spoken input to text via Whisper model.
+Emotion Detection: Identifies user emotions with a fine-tuned Roberta model.
+Age-Specific Support: Customizes conversations based on user age.
+Real-Time Chat: Uses DialoGPT to generate responses and maintain chat history.
+Interactive UI: Streamlit-based chat interface with real-time input processing.
+
 # Clear chat history
 if st.sidebar.button("Clear Chat History"):
     st.session_state["chat_history"] = None
     st.session_state["chat_log"] = []
     st.experimental_rerun()
+'''
