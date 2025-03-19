@@ -78,7 +78,7 @@ if user_input:
 if st.session_state.alert_flag:
     st.markdown("---")
     st.warning("⚠️ **It seems you're facing something tough. Please don't hesitate to reach out to professionals.**")
-    st.info("💡 **Suggestion:** Talk to a mental health expert or use trusted apps like Practo, BetterHelp.")
+    st.info("💡 **Suggestion:** Talk to a mental health expert or use trusted apps like Nirveon X")
     st.markdown("---")
 
 # Footer
