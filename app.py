@@ -1,128 +1,88 @@
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForCausalLM, pipeline
-import torch
-import json
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-# Load chatbot model and tokenizer (using DialoGPT to avoid sentencepiece issues)
-@st.cache_resource
-def load_model():
-    model_name = "microsoft/DialoGPT-medium"
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModelForCausalLM.from_pretrained(model_name)
-    return model, tokenizer
+# App Config
+st.set_page_config(page_title="💬 MindEase Chatbot", page_icon="🧠", layout="centered")
 
-chatbot_model, chatbot_tokenizer = load_model()
+# Function to clear chat
+def clear_chat_history():
+    st.session_state.messages = [{"role": "assistant", "text": "How may I assist you today?"}]
+    st.session_state.alert_flag = False
+st.markdown("""
+    <div style='text-align: center;'>
+        <h1 style='color: #2E86C1;'>💬 MindEase Chatbot</h1>
+        <p>Your friendly virtual mental health assistant</p>
+        <hr style='border: 1px solid #AED6F1;'>
+    </div>
+""", unsafe_allow_html=True)
+# Sidebar
+with st.sidebar:
+    st.write("Your Safe Space to Talk & Heal. 💙")
+    st.button('🗑️ Clear Chat History', on_click=clear_chat_history)
 
-# Load additional pipelines (removing gated model AIMH/mental-roberta-large)
-@st.cache_resource
-def load_pipelines():
-    text_classifier = pipeline("text-classification", model="SamLowe/roberta-base-go_emotions")
-    asr_whisper = pipeline("automatic-speech-recognition", model="openai/whisper-large")
-    return text_classifier, asr_whisper
+    st.subheader('Models and Parameters')
+    selected_model = st.selectbox('Choose a model', ['model1','model2','model3'], key='selected_model')
 
-text_classifier, asr_whisper = load_pipelines()
-
-# Load conversation patterns from JSON
-@st.cache_resource
-def load_conversation_patterns():
-    with open('sample.json', 'r') as f:
-        sample_data = json.load(f)
-    with open('samples.json', 'r') as f:
-        samples_data = json.load(f)
-    return sample_data, samples_data
-
-sample_data, samples_data = load_conversation_patterns()
-
-# Generate response
-
-def check_trigger_response(user_input):
-    user_input_lower = user_input.lower()
-    for convo in sample_data["conversations"]:
-        for keyword in convo["trigger_keywords"]:
-            if keyword in user_input_lower:
-                return convo["response"], convo["follow_up_questions"], convo.get("treatment", "")
-    return None, None, None
-
-
-def generate_response(user_input, chat_history_ids, temperature, max_new_tokens, top_p):
-    matched_response, follow_ups, treatment = check_trigger_response(user_input)
-    if matched_response:
-        response = matched_response
-        if follow_ups:
-            response += "\n\n" + "\n".join(follow_ups)
-        if treatment:
-            response += f"\n\nSuggested treatment: {treatment}"
-        return response, chat_history_ids
-
-    new_user_input_ids = chatbot_tokenizer.encode(user_input + chatbot_tokenizer.eos_token, return_tensors='pt')
-    bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1) if chat_history_ids is not None else new_user_input_ids
-    max_length = bot_input_ids.shape[-1] + max_new_tokens
-
-    chat_history_ids = chatbot_model.generate(
-        bot_input_ids,
-        max_length=max_length,
-        pad_token_id=chatbot_tokenizer.eos_token_id,
-        temperature=temperature,
-        top_p=top_p,
-        do_sample=True,
-        repetition_penalty=1.1,
-        no_repeat_ngram_size=2
-    )
-    response = chatbot_tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True)
-    if not response.strip():
-        response = "Sorry, I couldn't process that. Could you rephrase?"
-    return response.strip(), chat_history_ids
-
-# Sidebar settings
-st.sidebar.title("🧠 MindEase Chatbot")
-st.sidebar.markdown("Your Safe Space to Talk & Heal. 💙")
-st.sidebar.subheader("Models and Parameters")
-model_choice = st.sidebar.selectbox("Choose a model", ["Model1"])
-temperature = st.sidebar.slider("Temperature", 0.01, 1.00, 0.7)
-max_new_tokens = st.sidebar.slider("Max New Tokens", 50, 500, 150)
-top_p = st.sidebar.slider("Top-p (Nucleus Sampling)", 0.1, 1.0, 0.9)
+    temperature = st.slider('Temperature', min_value=0.01, max_value=1.0, value=0.7, step=0.01)
+    max_tokens = st.slider('Max Tokens', min_value=50, max_value=500, value=150, step=10)
 
 # Initialize session state
-if "chat_history" not in st.session_state:
-    st.session_state["chat_history"] = None
-if "chat_log" not in st.session_state:
-    st.session_state["chat_log"] = []
+if "messages" not in st.session_state:
+    st.session_state.messages = [{"role": "assistant", "text": "How may I assist you today?"}]
+if "alert_flag" not in st.session_state:
+    st.session_state.alert_flag = False
 
-# Chat UI
-st.title("🧠 MindEase Chatbot")
-st.write("How may I assist you today?")
-user_input = st.text_input("Type a message...", key="input")
+# Load Model
+model_name = "facebook/blenderbot-400M-distill"
+model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+
+# Distress keywords
+distress_keywords = ["suicide", "kill myself", "die", "worthless", "hopeless", "end life", "depressed", "can't go on", "hurt myself"]
+
+# Display chat messages
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["text"])
+
+# Function to generate AI response
+def generate_ai_response(user_msg):
+    # Distress keyword check
+    if any(keyword in user_msg.lower() for keyword in distress_keywords):
+        st.session_state.alert_flag = True
+
+    # Generate response using model
+    inputs = tokenizer([user_msg], return_tensors="pt")
+    outputs = model.generate(**inputs, max_length=max_tokens)
+    reply = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+
+    return reply
+
+# Chat input
+user_input = st.chat_input("Type your message...")
 
 if user_input:
-    with st.spinner("Thinking..."):
-        chatbot_response, st.session_state["chat_history"] = generate_response(user_input, st.session_state["chat_history"], temperature, max_new_tokens, top_p)
-        st.session_state["chat_log"].append(("You", user_input))
-        st.session_state["chat_log"].append(("Bot", chatbot_response))
+    # User message display
+    st.session_state.messages.append({"role": "user", "text": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
 
-# Display chat log in bubble format
-for sender, message in st.session_state["chat_log"]:
-    if sender == "You":
-        st.markdown(f"""
-            <div style='background-color:#DCF8C6; padding:10px; border-radius:10px; margin-bottom:5px; text-align:right; color:black;'>
-                <strong>{sender}:</strong> {message}
-            </div>""", unsafe_allow_html=True)
-    else:
-        st.markdown(f"""
-            <div style='background-color:#F1F0F0; padding:10px; border-radius:10px; margin-bottom:5px; text-align:left; color:red;'>
-                <strong>{sender}:</strong> {message}
-            </div>""", unsafe_allow_html=True)
+    # AI Response
+    bot_response = generate_ai_response(user_input)
+    st.session_state.messages.append({"role": "assistant", "text": bot_response})
 
-# Auto scroll
+    with st.chat_message("assistant"):
+        st.markdown(bot_response)
+
+# Show distress alert at bottom
+if st.session_state.alert_flag:
+    st.markdown("---")
+    st.warning("⚠️ **It seems you're facing something tough. Please don't hesitate to reach out to professionals.**")
+    st.info("💡 **Suggestion:** Talk to a mental health expert or use trusted apps like Practo, BetterHelp.")
+    st.markdown("---")
+
+# Footer
 st.markdown("""
-<script>
-    var inputBox = window.parent.document.querySelector('input[data-testid=\"stTextInput\"]');
-    inputBox.focus();
-    window.scrollTo(0, document.body.scrollHeight);
-</script>
+    <hr style='border: 1px solid #AED6F1;'>
+    <p style='text-align:center; color: gray;'>Powered by MindEase | Your well-being matters 💙</p>
 """, unsafe_allow_html=True)
-
-# Clear chat history
-if st.sidebar.button("Clear Chat History"):
-    st.session_state["chat_history"] = None
-    st.session_state["chat_log"] = []
-    st.experimental_rerun()
