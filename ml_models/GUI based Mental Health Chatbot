@@ -1,0 +1,119 @@
+import json
+import random
+import torch
+from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
+import tkinter as tk
+from tkinter import scrolledtext, font
+
+# Load the Health.json file
+with open("Health.json", "r") as file:
+    health_data = json.load(file)
+
+# Load the BlenderBot model and tokenizer
+try:
+    model_name = "facebook/blenderbot-400M-distill"  # Smaller and faster version
+    tokenizer = BlenderbotTokenizer.from_pretrained(model_name)
+    model = BlenderbotForConditionalGeneration.from_pretrained(model_name)
+except Exception as e:
+    print(f"Error loading models: {e}")
+    exit()
+
+# Function to find a response from the JSON data
+def get_json_response(user_input):
+    for intent in health_data["intents"]:
+        for pattern in intent["patterns"]:
+            if pattern.lower() in user_input.lower():
+                return random.choice(intent["responses"])
+    return None
+
+# Function to generate a response using BlenderBot
+def generate_llm_response(user_input):
+    inputs = tokenizer([user_input], return_tensors="pt", truncation=True, padding=True)
+    reply_ids = model.generate(**inputs, max_length=150)
+    return tokenizer.decode(reply_ids[0], skip_special_tokens=True)
+
+# Function to handle user input and generate a response
+def send_message():
+    user_input = user_entry.get()
+    if not user_input:
+        return
+
+    # Add user input to the chat window
+    chat_window.config(state=tk.NORMAL)
+    chat_window.insert(tk.END, f"You: {user_input}\n", "user")
+    chat_window.config(state=tk.DISABLED)
+
+    # Clear the input field
+    user_entry.delete(0, tk.END)
+
+    # Get response from JSON or LLM
+    response = get_json_response(user_input)
+    if response is None:
+        response = generate_llm_response(user_input)
+
+    # Add bot response to the chat window
+    chat_window.config(state=tk.NORMAL)
+    chat_window.insert(tk.END, f"Bot: {response}\n\n", "bot")
+    chat_window.config(state=tk.DISABLED)
+    chat_window.yview(tk.END)
+
+# Create the main GUI window
+root = tk.Tk()
+root.title("Mental Health Chatbot")
+root.geometry("700x500")
+root.configure(bg="#121212")  # Dark background
+
+# Custom fonts
+title_font = font.Font(family="Helvetica", size=16, weight="bold")
+chat_font = font.Font(family="Arial", size=12)
+entry_font = font.Font(family="Arial", size=12)
+button_font = font.Font(family="Arial", size=12, weight="bold")
+
+# Create a title label
+title_label = tk.Label(root, text="Mental Health Chatbot", font=title_font, bg="#121212", fg="#ffffff")
+title_label.pack(pady=10)
+
+# Create a chat window (scrolled text widget)
+chat_window = scrolledtext.ScrolledText(
+    root,
+    wrap=tk.WORD,
+    state=tk.DISABLED,
+    bg="#1e1e1e",  # Dark gray background
+    fg="#ffffff",  # White text
+    font=chat_font,
+    insertbackground="white",  # Cursor color
+    padx=10,
+    pady=10
+)
+chat_window.tag_config("user", foreground="#bb86fc")  # Purple for user messages
+chat_window.tag_config("bot", foreground="#03dac6")  # Teal for bot messages
+chat_window.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+# Create an input field for user messages
+user_entry = tk.Entry(
+    root,
+    font=entry_font,
+    bg="#1e1e1e",  # Dark gray background
+    fg="#ffffff",  # White text
+    insertbackground="white"  # Cursor color
+)
+user_entry.pack(padx=10, pady=10, fill=tk.X)
+
+# Create a send button
+send_button = tk.Button(
+    root,
+    text="Send",
+    font=button_font,
+    bg="#bb86fc",  # Purple background
+    fg="#121212",  # Dark text
+    activebackground="#03dac6",  # Teal when clicked
+    activeforeground="#121212",  # Dark text when clicked
+    command=send_message
+)
+send_button.pack(padx=10, pady=10, fill=tk.X)
+
+# Bind Enter key to send message
+root.bind("<Return>", lambda event: send_message())
+
+# Start the GUI event loop
+root.mainloop()
