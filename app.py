@@ -15,7 +15,7 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# User input
+# User input 
 if prompt := st.chat_input("What's in your mind!"):
     # Store user message
     st.session_state.messages.append({"role": "user", "content": prompt})
