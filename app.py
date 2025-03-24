@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+from emotion_classifier import EmotionClassifier
 
 # App title
 st.set_page_config(page_title="💬 MindEase Chatbot")
@@ -35,11 +36,20 @@ if prompt := st.chat_input("What's in your mind!"):
 
     
     with st.chat_message("user"):
-        st.markdown(user_input)
+        st.markdown(prompt)
 
-    bot_response = chatbot_response(user_input)
-    st.session_state.messages.append({"role": "assistant", "text": bot_response})
+    # Get response from emotion classifier
+    if not hasattr(st.session_state, 'emotion_classifier'):
+        st.session_state.emotion_classifier = EmotionClassifier()
+    
+    result = st.session_state.emotion_classifier.classify(prompt)
+    emotion = result["primary_emotion"]
+    confidence = result["confidence"]
+    
+    # Store assistant message
+    response = f"I sense that you're feeling {emotion} (confidence: {confidence:.2f}). Would you like to talk more about it?"
+    st.session_state.messages.append({"role": "assistant", "text": response})
 
     # Display Chatbot Response
     with st.chat_message("assistant"):
-        st.markdown(bot_response)
+        st.markdown(response)
