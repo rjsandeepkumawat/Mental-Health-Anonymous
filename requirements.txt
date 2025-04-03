@@ -1,6 +1,2 @@
-streamlit==1.33.0
-transformers==4.37.2
-tokenizers==0.15.1
-datasets==2.19.0
-torch==2.1.2
-pillow==10.2.0
+grok
+streamlit
