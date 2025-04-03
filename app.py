@@ -1,13 +1,52 @@
 import streamlit as st
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+import json
+from typing import Generator
+from groq import Groq
 
-# App Config
+# Set Page Config
 st.set_page_config(page_title="💬 MindEase Chatbot", page_icon="🧠", layout="centered")
 
-# Function to clear chat
+# Initialize Groq Client
+client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+
+# Define File for Reinforcement Learning Data
+FEEDBACK_FILE = "chat_feedback.json"
+
+# Function to Load and Save Feedback Data
+def load_feedback_data():
+    try:
+        with open(FEEDBACK_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"positive": 0, "negative": 0, "improvement_suggestions": []}
+
+def save_feedback_data(data):
+    with open(FEEDBACK_FILE, "w") as file:
+        json.dump(data, file, indent=4)
+
+feedback_data = load_feedback_data()
+
+# Initialize Session State for Messages
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Define Available Models
+models = {
+    "gemma2-9b-it": "Gemma2-9b-it",
+    "llama-3.3-70b-versatile": "LLaMA3.3-70b",
+    "llama-3.1-8b-instant": "LLaMA3.1-8b",
+    "llama3-70b-8192": "LLaMA3-70b",
+    "llama3-8b-8192": "LLaMA3-8b",
+}
+
+# Sidebar for Model Selection
+st.sidebar.title("Settings")
+model_option = st.sidebar.selectbox("Choose a model:", list(models.keys()), format_func=lambda x: models[x])
+
 def clear_chat_history():
     st.session_state.messages = [{"role": "assistant", "text": "How may I assist you today?"}]
     st.session_state.alert_flag = False
+
 st.markdown("""
     <div style='text-align: center;'>
         <h1 style='color: #2E86C1;'>💬 MindEase Chatbot</h1>
@@ -15,74 +54,94 @@ st.markdown("""
         <hr style='border: 1px solid #AED6F1;'>
     </div>
 """, unsafe_allow_html=True)
-# Sidebar
-with st.sidebar:
-    st.write("Your Safe Space to Talk & Heal. 💙")
-    st.button('🗑️ Clear Chat History', on_click=clear_chat_history)
 
-    st.subheader('Models and Parameters')
-    selected_model = st.selectbox('Choose a model', ['model1','model2','model3'], key='selected_model')
-
-    temperature = st.slider('Temperature', min_value=0.01, max_value=1.0, value=0.7, step=0.01)
-    max_tokens = st.slider('Max Tokens', min_value=50, max_value=500, value=150, step=10)
-
-# Initialize session state
-if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "text": "How may I assist you today?"}]
-if "alert_flag" not in st.session_state:
-    st.session_state.alert_flag = False
-
-# Load Model
-model_name = "facebook/blenderbot-400M-distill"
-model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-# Distress keywords
-distress_keywords = ["suicide", "kill myself", "die", "worthless", "hopeless", "end life", "depressed", "can't go on", "hurt myself"]
-
-# Display chat messages
+# Display Chat Messages in WhatsApp-Like Format
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["text"])
+    if message["role"] == "user":
+        with st.chat_message("user", avatar="🧑‍⚕️"):
+            st.markdown(f"**You:** {message['content']}")
+    else:
+        with st.chat_message("assistant", avatar="🤖"):
+            st.markdown(f"**Bot:** {message['content']}")
 
-# Function to generate AI response
-def generate_ai_response(user_msg):
-    # Distress keyword check
-    if any(keyword in user_msg.lower() for keyword in distress_keywords):
-        st.session_state.alert_flag = True
+# Function to Generate Chat Responses
+def generate_chat_responses(chat_completion) -> Generator[str, None, None]:
+    for chunk in chat_completion:
+        if chunk.choices[0].delta.content:
+            yield chunk.choices[0].delta.content
 
-    # Generate response using model
-    inputs = tokenizer([user_msg], return_tensors="pt")
-    outputs = model.generate(**inputs, max_length=max_tokens)
-    reply = tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+# Handle User Input
+if prompt := st.chat_input("Type your message..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    return reply
+    with st.chat_message("user", avatar="🧑‍⚕️"):
+        st.markdown(f"**You:** {prompt}")
 
-# Chat input
-user_input = st.chat_input("Type your message...")
+    full_response = ""
+    try:
+        chat_completion = client.chat.completions.create(
+            model=model_option,
+            messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+            max_tokens=512,
+            stream=True
+        )
+        with st.chat_message("assistant", avatar="🤖"):
+            chat_responses_generator = generate_chat_responses(chat_completion)
+            full_response = st.write_stream(chat_responses_generator)
+    except:
+        st.error("Something went wrong.", icon="🚨")
 
-if user_input:
-    # User message display
-    st.session_state.messages.append({"role": "user", "text": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
+    # Store Assistant Response
+    if isinstance(full_response, str):
+        st.session_state.messages.append({"role": "assistant", "content": full_response})
+    else:
+        combined_response = "\n".join(str(item) for item in full_response)
+        st.session_state.messages.append({"role": "assistant", "content": combined_response})
 
-    # AI Response
-    bot_response = generate_ai_response(user_input)
-    st.session_state.messages.append({"role": "assistant", "text": bot_response})
+    # **Emergency Detection (Only for Critical Cases)**
+    critical_keywords = ["suicide", "end my life", "kill myself", "no reason to live", "giving up", "can't go on"]
+    if any(word in prompt.lower() for word in critical_keywords):
+        st.error("You're not alone. Please reach out to a professional or talk to a trusted person. 💙", icon="🚨")
 
-    with st.chat_message("assistant"):
-        st.markdown(bot_response)
+# **Feedback System in Sidebar**
+st.sidebar.subheader("💬 Chat Feedback")
 
-# Show distress alert at bottom
-if st.session_state.alert_flag:
-    st.markdown("---")
-    st.warning("⚠️ **It seems you're facing something tough. Please don't hesitate to reach out to professionals.**")
-    st.info("💡 **Suggestion:** Talk to a mental health expert or use trusted apps like Nirveon X")
-    st.markdown("---")
+feedback = st.sidebar.radio(
+    "How was your experience?",
+    ["😡 Very Bad", "😞 Bad", "😐 Neutral", "😊 Good", "😍 Excellent"],
+    index=None,
+    key="feedback_rating"
+)
 
-# Footer
-st.markdown("""
-    <hr style='border: 1px solid #AED6F1;'>
-    <p style='text-align:center; color: gray;'>Powered by MindEase | Your well-being matters 💙</p>
-""", unsafe_allow_html=True)
+if feedback:
+    feedback_score = {"😡 Very Bad": 1, "😞 Bad": 2, "😐 Neutral": 3, "😊 Good": 4, "😍 Excellent": 5}[feedback]
+
+    if feedback_score in [1, 2]:  # Negative Feedback
+        feedback_data["negative"] += 1
+        st.sidebar.warning("We're sorry! What can we improve?")
+        improvement_tip = st.sidebar.text_input("Your suggestion:")
+        if improvement_tip:
+            feedback_data["improvement_suggestions"].append(improvement_tip)
+            st.sidebar.success("Thanks for your feedback! We'll improve. 💡")
+    else:  # Positive Feedback
+        feedback_data["positive"] += 1
+        st.sidebar.success("Glad you liked it! 😊")
+
+    save_feedback_data(feedback_data)
+
+    # **Reinforcement Learning: Adjust Model Based on Feedback**
+    if feedback_data["negative"] > feedback_data["positive"]:
+        st.sidebar.warning("We're improving responses based on your feedback. Expect better interactions soon! 🚀")
+    elif feedback_data["positive"] > feedback_data["negative"]:
+        st.sidebar.success("Our chatbot is improving! Thanks for your support. 💙")
+
+# **Feedback Summary in Sidebar**
+st.sidebar.subheader("📊 Feedback Summary")
+st.sidebar.write(f"👍 Positive Ratings: {feedback_data['positive']}")
+st.sidebar.write(f"👎 Negative Ratings: {feedback_data['negative']}")
+st.sidebar.write(f"💡 Suggestions: {len(feedback_data['improvement_suggestions'])}")
+
+if feedback_data["improvement_suggestions"]:
+    st.sidebar.subheader("🔍 Recent User Suggestions")
+    for idx, suggestion in enumerate(feedback_data["improvement_suggestions"][-3:], start=1):
+        st.sidebar.write(f"{idx}. {suggestion}")
