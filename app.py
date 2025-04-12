@@ -59,7 +59,7 @@ st.sidebar.markdown(f"**Max Tokens:** `{model_specs[BEST_MODEL]['max_tokens']}`"
 st.sidebar.button("🗑 Clear Chat", on_click=lambda: st.session_state.clear())
 
 # --- Title ---
-st.markdown("<h1 style='text-align: center;'>💬 MindEase - Your Mental Health Ally</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center;'>💬 MindEase - Your Mental Health Chatbot</h1>", unsafe_allow_html=True)
 
 # Show chat history
 for msg in st.session_state.messages:
